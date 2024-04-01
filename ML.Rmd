@@ -1,0 +1,318 @@
+---
+title: "ML_course_project"
+author: "Wanjie Feng"
+date: "2024-03-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Project Overview
+
+Using devices such as _Jawbone Up_, _Nike FuelBand_, and _Fitbit_ it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify _how much_ of a particular activity they do, but they rarely quantify _how well_ they do it. In this project, the goal will be to use data from accelerometers on the belt, forearm, arm, and dumbbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The goal of this project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set.  
+
+The training data for this project are available at:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available at:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The outline of this project is:
+
+* Download data 
+* Explore the data 1
+* Clean the data
+* Explore the data 2
+* Build ML Model
+* Summary
+
+### 1. Download Data
+
+```{r}
+library(RCurl)
+training_url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+x_url <- getURL(training_url)
+training <- read.csv(textConnection(x_url))
+testing_url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+x_url <- getURL(testing_url)
+testing <- read.csv(textConnection(x_url))
+```
+
+
+### 2. Explore Data 1
+
+```{r}
+head(training)
+```
+
+There are 160 columns in this training data set. We can see that there are empty and NA values. We need to clean them.
+
+```{r}
+dim(training)
+```
+
+There are 19622 samples and 160 features in the training data set.
+
+```{r}
+table(training$classe)
+```
+
+We can see the data samples for each classe. 
+
+
+```{r}
+head(testing)
+```
+
+There are empty and NA values in the testing data set. We need to first clean them. 
+
+```{r}
+dim(testing)
+```
+There are 20 samples and 160 features in testing data set. 
+
+### 3. Clean the Data
+
+#### 3.1 Replace empty cells with NA
+
+```{r}
+training[training==''] <-NA
+testing[testing=='']<-NA
+```
+
+#### 3.2 Remove columns with all NA
+
+```{r}
+training <- training[,colSums(is.na(training))<nrow(training)]
+testing <- testing[,colSums(is.na(testing))<nrow(testing)]
+```
+
+```{r}
+head(training)
+```
+
+There are  no columns in training data which are all NA. 
+
+```{r}
+head(testing)
+```
+
+There are 100 columns removed in testing data. Since testing data are used to evaluate the machine learning models, we need to keep their features identical. Therefore, we can remove the 100 columns to keep training and testing data sets have same data features. 
+
+```{r}
+col_names <- names(testing)
+training <- subset(training, select = c(col_names[1:59],"classe"))
+```
+
+### 3.3 Remove Features
+
+There are descriptive columns, which can be removed for machine learning. 
+
+```{r}
+training <-subset(training, select=-c(X, user_name, raw_timestamp_part_1, 
+            raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+testing <- subset(testing, select=-c(X, user_name, raw_timestamp_part_1, 
+            raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+```
+
+Next, we view the data again. 
+
+```{r}
+head(training)
+```
+```{r}
+head(testing)
+```
+
+After cleaning the data, there are 53 columns left in training and testing data sets. Next, we visualize those data. 
+
+### 3. Explore the Data - 2
+```{r}
+summary(training)
+```
+
+```{r}
+summary(testing)
+```
+
+Since the website is not accessible anymore, it's hard to know what all those features are in training and testing data sets. Here first visualizes the variables. Since there are 53 columns or features, it's hard to make a single plot including all variables. Because these data were collected from accelerometers on different targets, we can visualize the data on each target. 
+
+```{r}
+names <- names(training)
+names
+```
+From the column names, we can see that there are data collected on the belt, arm, dumbbell, and forearm. We can use these keys to make all the plots. 
+
+```{r, echo=FALSE, fig.width=8,fig.height=28}
+library(ggplot2)
+library(patchwork)
+belt_cols <- c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt",    
+              "gyros_belt_x","gyros_belt_y","gyros_belt_z","accel_belt_x",        
+              "accel_belt_y", "accel_belt_z","magnet_belt_x", "magnet_belt_y",       
+              "magnet_belt_z")
+for (value in belt_cols){
+  if (value == "roll_belt"){
+    p1 <- ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+  geom_boxplot(fill="slateblue", alpha=0.2) +
+  stat_boxplot(geom = 'errorbar') +
+  xlab("Classe") +
+  theme(axis.text = element_text(size = 14))
+  }
+  else{
+    p1 <- p1 + ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+  geom_boxplot(fill="slateblue", alpha=0.2) +
+  stat_boxplot(geom = 'errorbar') +
+  xlab("Classe") +
+  theme(axis.text = element_text(size = 14))
+  }
+}
+p1 + plot_layout(nrow=7)
+```
+
+```{r, echo=FALSE, fig.width=8,fig.height=28}
+arm_cols <- c("roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm",    
+              "gyros_arm_x","gyros_arm_y","gyros_arm_z","accel_arm_x",        
+              "accel_arm_y", "accel_arm_z","magnet_arm_x", "magnet_arm_y",       
+              "magnet_arm_z")
+for (value in arm_cols){
+  if (value == "roll_arm"){
+    p2 <- ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+  geom_boxplot(fill="slateblue", alpha=0.2) +
+  stat_boxplot(geom = 'errorbar') +
+  xlab("Classe") +
+  theme(axis.text = element_text(size = 14))
+  }
+  else{
+    p2 <- p2 + ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+  geom_boxplot(fill="slateblue", alpha=0.2) +
+  stat_boxplot(geom = 'errorbar') +
+  xlab("Classe") +
+  theme(axis.text = element_text(size = 14))
+  }
+}
+p2 + plot_layout(nrow=7)
+```
+```{r, echo=FALSE, fig.width=8,fig.height=28}
+dumb_cols <- c("roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell",    
+              "gyros_dumbbell_x","gyros_dumbbell_y","gyros_dumbbell_z","accel_dumbbell_x",        
+              "accel_dumbbell_y", "accel_dumbbell_z","magnet_dumbbell_x", "magnet_dumbbell_y",       
+              "magnet_dumbbell_z")
+for (value in dumb_cols){
+  if (value == "roll_dumbbell"){
+    p3 <- ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+      geom_boxplot(fill="slateblue", alpha=0.2) +
+      stat_boxplot(geom = 'errorbar') +
+      xlab("Classe") +
+      theme(axis.text = element_text(size = 14))
+  }
+  else{
+    p3 <- p3 + ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+        geom_boxplot(fill="slateblue", alpha=0.2) +
+        stat_boxplot(geom = 'errorbar') +
+        xlab("Classe") +
+        theme(axis.text = element_text(size = 14))
+  }
+}
+p3 + plot_layout(nrow=7)
+```
+
+```{r, echo=FALSE, fig.width=8,fig.height=28}
+arm_cols <- c("roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm",    
+              "gyros_forearm_x","gyros_forearm_y","gyros_forearm_z","accel_forearm_x",        
+              "accel_forearm_y", "accel_forearm_z","magnet_forearm_x", "magnet_forearm_y",       
+              "magnet_forearm_z")
+for (value in arm_cols){
+  if (value == "roll_forearm"){
+    p4 <- ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+  geom_boxplot(fill="slateblue", alpha=0.2) +
+  stat_boxplot(geom = 'errorbar') +
+  xlab("Classe") +
+  theme(axis.text = element_text(size = 14))
+  }
+  else{
+    p4 <- p4 + ggplot(data = training, aes_string(x=as.character("classe"), y=value)) +
+  geom_boxplot(fill="slateblue", alpha=0.2) +
+  stat_boxplot(geom = 'errorbar') +
+  xlab("Classe") +
+  theme(axis.text = element_text(size = 14))
+  }
+}
+p4 + plot_layout(nrow=7)
+```
+
+From those plots, we can get some insights about those data. 
+
+### 5. Build ML Models
+
+Since this is a classification problem, here uses random tree and random forest to train those data. Note that the testing data set don't have variable _classe_. It's not useful to test the model using it. Here splits the training data first. 
+
+#### 5.1 Split Training Data
+```{r}
+library(caret)
+inTrain <- createDataPartition(y=training$classe,
+                               p=0.75, list=FALSE)
+train_data <- training[inTrain,]
+test_data <- training[-inTrain,]
+print(dim(train_data))
+print(dim(test_data))
+```
+#### 5.2 Classification Trees
+```{r}
+set.seed(42432)
+mod_tree <- train(as.factor(classe)~., method="rpart",data=train_data)
+print(mod_tree$finalModel)
+```
+
+
+```{r,fig.width=10,fig.height=10}
+library(rattle)
+fancyRpartPlot(mod_tree$finalModel)
+```
+```{r}
+pred <- predict(mod_tree, newdata=train_data)
+confusionMatrix(pred,factor(train_data$classe))
+```
+
+```{r}
+pred <- predict(mod_tree, newdata=test_data)
+confusionMatrix(pred,factor(test_data$classe))
+```
+The out of sample accuracy is 49%, which is not very high. 
+
+#### 5.3 Random Forest
+
+```{r}
+library(randomForest)
+mod_rf <- train(as.factor(classe)~., method="rf",data=train_data, prox=TRUE, 
+                ntrees = 10)
+print(mod_rf)
+```
+
+
+```{r}
+pred <- predict(mod_rf, newdata=train_data)
+confusionMatrix(pred,factor(train_data$classe))
+```
+The accuracy is 100%. This model is pretty good.
+
+```{r}
+pred <- predict(mod_rf, newdata=test_data)
+confusionMatrix(pred,factor(test_data$classe))
+```
+On test data, the out of sample accuracy reaches 99.65%. This random forest model performs pretty well. However, compared with classification tree, this random forest takes a long time. 
+
+At last, let's predict the class of the testing data set.
+
+```{r}
+classe_test <- predict(mod_rf, testing)
+print(testing$problem_id)
+print(classe_test)
+```
+### 6. Summary
+
+Compared random forest and classification trees, on this typical data set, random forest performs much better than trees. However, random forest takes way more times than classification trees on training these data. A further development on these data can be : 1. Removing some of the features. From the plots, we can see that some of the variables are not helpful on classify these data, which can be removed to increase the efficiency of the training. 2. It is possible to use multiple models to increase the accuracy. 
+
