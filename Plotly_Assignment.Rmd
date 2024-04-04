@@ -1,0 +1,57 @@
+---
+title: "Plotly_Assignment"
+author: "Wanjie Feng"
+date: "2024-04-04"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Overview
+
+In this assignment, a presentation using Plotly was created. 
+
+
+
+## What is Plotly?
+
+Plotly is a web application for creating and sharing data visualizations. Plotly
+can work with several programming languages and applications including R,
+Python, and Microsoft Excel. We're going to concentrate on creating different
+graphs with Plotly and sharing those graphs.
+
+
+## Summary of MTCARS
+
+```{r}
+summary(mtcars)
+```
+
+## Plot weight vs mpg
+
+```{r , echo=FALSE, message=FALSE}
+library(plotly)
+library(ggplot2)
+plot_ly(mtcars, x = ~wt, y = ~mpg, type = "scatter")
+```
+
+## Plot cylinder vs mpg
+
+```{r , echo = FALSE, message=FALSE}
+library(plotly)
+plot_ly(mtcars, x = ~cyl, y = ~mpg, type = "box")
+```
+
+## Plot weight vs mpg using cylinder as factor and horsepower as size
+
+```{r , echo = FALSE, message=FALSE, warning = FALSE}
+library(plotly)
+plot_ly(mtcars, x = ~wt, y = ~mpg, type = "scatter", 
+        color = ~factor(cyl), size = ~hp)
+```
+
+## Thank you. 
