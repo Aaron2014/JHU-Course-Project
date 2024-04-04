@@ -1,0 +1,27 @@
+---
+title: "Leaflet_Map_assigment"
+author: "Wanjie Feng"
+date: "2024-04-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is an assignment for Course of R Markdown and Leaflet. In this project, a map was created. 
+
+
+
+```{r}
+library(leaflet)
+my_map <- leaflet() %>% 
+  addTiles()
+
+my_map <- my_map %>%
+  addMarkers(lat=32.230259, lng=-110.953610, 
+             popup="The University of Arizona")
+my_map
+```
