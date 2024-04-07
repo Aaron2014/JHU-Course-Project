@@ -1,0 +1,49 @@
+---
+title: "Shiny App on Mtcars"
+author: "Wanjie Feng"
+date: "2024-04-06"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## MTCars Data Set
+
+Motor Trend is a magazine about the automobile industry. R has a built-in data 
+set called "mtcars" that contains data from the 1974 Motor Trend US Magazine. 
+This project is to investigate the relationship between a set of variables and 
+miles per gallon(MPG) (outcome) in this data set.
+
+
+## Summary of MTCarS
+
+```{r cars, echo = TRUE}
+summary(mtcars)
+```
+
+## Shinny App
+
+
+The shinny app is available at https://es0for-aaron-fong.shinyapps.io/Shiny_App_project/.
+
+
+
+The ui.R and server.R are available at https://github.com/Aaron2014/JHU-Course-Project
+
+
+
+The instruction to use this app is available at https://github.com/Aaron2014/JHU-Course-Project
+
+
+## Introduction of the App
+
+This is an app to plot mtcars data. 
+
+There are **three select inputs**. One is for predictor, which works as the x axis on the plot. One is plot type, which allows user to choose “Scatter Plot” or “Box plot”. The third one is “Color Type”, which can be used as factor to color scatter plots. 
+
+There are **three check boxes** to show/hide x label, y label and figure  title.
+
+**One text input** allows user to enter the figure title. 
+ 
